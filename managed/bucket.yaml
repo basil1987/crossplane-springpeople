@@ -3,8 +3,8 @@ kind: Bucket
 metadata:
   labels:
     testing.upbound.io/example-name: s3-test-bucket
-  name: basil-varghese-buck1234
+  name: basil-varghese-buck12345
 spec:
   forProvider:
     forceDestroy: true
-    region: ap-south-1
+    region: ap-northeast-1
