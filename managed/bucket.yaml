@@ -1,0 +1,10 @@
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  labels:
+    testing.upbound.io/example-name: s3-test-bucket
+  name: basil-varghese-buck1234
+spec:
+  forProvider:
+    forceDestroy: true
+    region: ap-south-1
