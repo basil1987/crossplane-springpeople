@@ -1,7 +1,0 @@
-apiVersion: database.example.org/v1alpha1
-kind: XPostgreSQLInstance
-metadata:
-  name: my-db
-spec: 
-  parameters:
-    storageGB: 20
