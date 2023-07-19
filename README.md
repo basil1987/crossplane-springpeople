@@ -159,8 +159,19 @@ NOTE: All these managed resources in the "managed" folder use the provider https
 
 ## Create an RDS Instance
 
+I want to create an multi-tier infrastructure at AWS to run my application and the database. Below Diagram Demonstrate what I want.
+
+![rds-architecture](https://github.com/basil1987/crossplane-springpeople/assets/6800901/6e4f6cb1-36d1-473a-8d16-e1e0294f6462)
+
+
+I have kept all the managed resources you want to possibly created under the folder "managed/rds". Clone the repository and go to the folder.
+
 ```
-git clone https://github.com/basil1987/crossplane-springpeople.git
-cd crossplane-springpeople/managed/rds
-kubectl apply -f .
+git clone https://github.com/basil1987/crossplane-springpeople.git # Clone the code if you did not clone it already.
+git pull # If you cloned, take the latest update.
+cd crossplane-springpeople/managed/rds # Go to the folder that consist of the resources.
+
+# Create the resources:
+
+kubectl apply -f VPC.yaml  # Creates the VPC
 ```
