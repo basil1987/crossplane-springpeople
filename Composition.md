@@ -141,10 +141,45 @@ spec:
 The folder composite/s3-simple/composition consist of the XRD and Composition objects. You can create them in Kubernetes with kubectl apply. 
 
 ```
-git clone 
+git clone https://github.com/basil1987/crossplane-springpeople.git
+cd crossplane-springpeople/composite/s3-simple/composition
+kubectl apply -f definition.yaml
+kubectl apply -f composition.yaml
+```
+
+Make sure that they are ready. Below commands should return READY=true
+
+```
+kubectl get xrds 
+kubectl get compositions
 ```
 
 
+Now you can create the XR by applying the file composite/s3-simple/claim/s3.yaml
+
+```
+cd
+cd composite/s3-simple/claim
+kubectl apply -f s3.yaml
+```
 
 
+#### Verify everything. 
+
+1) Make sure that your XR is retuning the status READY=true 
+
+kubectl get composite
+
+2) The Bucket was created in the right region mentioned in the claim. For that, you can check the MR
+
+kubectl describe buckets.s3.aws.upbound.io 
+
+You can look into the status field which contains region information, ARN, ID
+
+3) Your XR copied the status updates such as ARN and ID.
+
+kubectl get composite
+kubectl describe COMPOSITE_NAME_FROM_PREVIOUS_COMMAND
+
+You will see ARN and BucketName updated in the status field. 
 
