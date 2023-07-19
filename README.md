@@ -34,25 +34,128 @@ You can install crossplane by following the instructions at https://docs.crosspl
 
 ## Install AWS Provider
 
-You can install provider-aws package from upbound marketplace => https://marketplace.upbound.io/providers/upbound/provider-aws/v0.37.0
+You can search in the upbound marketplace or Google to get the list of providers. 
 
-```A secret which consist of your aws credentials must be created to complete the provider configuurations```
+Some examples are
+
+https://marketplace.upbound.io/providers/upbound/provider-aws/v0.37.0
+https://github.com/crossplane-contrib/provider-aws
+https://marketplace.upbound.io/providers/crossplane-contrib/provider-helm/v0.15.0
+
+To install a provider, create Customer resource "provider" provided the cross-plane. 
+
+```
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-aws-eks
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws-eks:v0.37.0
+```
+
+Save above content on a YAML and create the provider with kubectl apply -f <FILENAME>
+
+
+After you installed the provider, run below command to verify the provider. 
+
+```kubectl get providers # shows the Status of the prover 
+   kubectl get pods -n crossplane-system  # See the status of the provider pod
+```
+
+Make sure that status=True in the above command before proceeding to next step. 
+
+
+Now your provider is installed, its time to create a providerConfig. 
+
+    1) Create a secret that looks like an aws credentials file inside Kubernetes.
+        ```
+        [default]
+        aws_access_key_id=
+        aws_secret_access_key=
+        region: 
+        ```
+        
+        Save above content to a text file "test.txt" on your machine, and create a kubernetes secret called "aws-secret" under the key "creds".
+
+        ```kubectl create secret generic aws-secret -n crossplane-system --from-file=creds=test.txt```
+
+        Verify the secret is created by running 
+
+        ```kubectl get secrets -n crossplane-system```
+
+        Create a Provider Configuration.
+
+        You can create a provider configuration by applying the below manifest to the cluster.  
+
+        ```
+        apiVersion: aws.upbound.io/v1beta1
+        kind: ProviderConfig
+        metadata:
+          name: default
+        spec:
+          credentials:
+            source: Secret
+            secretRef:
+              namespace: crossplane-system
+              name: aws-secret
+              key: creds
+        ```
+
+        Save above file to a file called "awsConfig.yaml" and modify the namespace, name, key.
+
+        Congrats with the Provider configuration.! You can now start creating your managed resources. 
+
+
 
 ## Create an S3 bucket
 
+To create an S3 bucket, make sure that the provider is installed. Look for the provider configuration for upbound by running below command.
+
+```kubectl get providerconfig```
+
+The READY should be True. Mention the name of the ProviderConfig in the last line of below YAML that reads "providerConfigRef"
+
+Now you can create your first managed resource (S3 Bucket). You can save the below YAML to a file and use kubectl apply. 
+
 ```
-git clone https://github.com/basil1987/crossplane-springpeople.git
-cd crossplane-springpeople/managed
-kubectl apply -f bucket.yaml
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  annotations:
+    crossplane.io/external-name: hfdghjfsjkfhgksjdhgkjdfkgjffedgf
+  name: basil-12345670987-dgfhf
+  labels:
+    managed-by: crossplane
+    project: my-interal-app
+spec:
+  forProvider:
+    region: ap-northeast-1
+    tags:
+      managed-by: crossplane
+      project: my-interal-app
+      billingContact: basil
+  providerConfigRef:
+    name: default
 ```
 
-## Create an EC2 Instance
+Congrats! You created your first managed resource. 
+
+
+## Create all resources
+
+I have created a bunch of managed resources inside the folder "managed" in this repository. You can clone this repository and use them as you like. 
+
 
 ```
 git clone https://github.com/basil1987/crossplane-springpeople.git
-cd crossplane-springpeople/managed
-kubectl apply -f instance.yaml
 ```
+
+After your ran above, you will find a folder "crossplane-springpeople". Go to that folder and go to managed.
+
+```cd crossplane-springpeople/managed```
+
+NOTE: All these managed resources in the "managed" folder use the provider https://marketplace.upbound.io/providers/upbound/provider-aws/v0.37.0 . So make sure that your provider and provider configurations are created already.
+
 
 ## Create an RDS Instance
 
