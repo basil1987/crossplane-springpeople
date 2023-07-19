@@ -21,12 +21,15 @@ spec:
         spec:
           deletionPolicy: Delete
           forProvider:
-            region: ap-northeast-1
+            region: ap-south-1
             forceDestroy: true # be careful with this
       patches:
-        - type: ToCompositeFieldPath
-          fromFieldPath: status.atProvider.id
-          toFieldPath: status.bucketName
         - type: FromCompositeFieldPath
           fromFieldPath: spec.resourceConfig.region
           toFieldPath: spec.forProvider.region
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.id
+          toFieldPath: status.bucketName
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.arn
