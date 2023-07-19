@@ -174,4 +174,15 @@ cd crossplane-springpeople/managed/rds # Go to the folder that consist of the re
 # Create the resources:
 
 kubectl apply -f VPC.yaml  # Creates the VPC
+kubectl apply -f subnets.yaml # Creates Subnets
+kubectl apply -f internetgateway.yaml # Creates Internet Gateway
+kubectl apply -f routeTablePrivate.yaml
+kubectl apply -f routeTablePublic.yaml
+kubectl apply -f routes.yaml
+kubectl apply -f routeTableAssociationPrivate.yaml
+kubectl apply -f routeTableAssociationPublic.yaml
+kubectl apply -f dbSubnetGroup.yaml
+kubectl apply -f securityGroupDB.yaml
+kubectl apply -f securityGroupRuleDB.yaml
+kubectl apply -f postgreSQLAurora.yaml
 ```
