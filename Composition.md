@@ -183,3 +183,36 @@ kubectl describe COMPOSITE_NAME_FROM_PREVIOUS_COMMAND
 
 You will see ARN and BucketName updated in the status field. 
 
+
+## Another use case
+
+I want a bucket and the bucket will be used for storing some sensitive data by my applications. So I want a bucket to be created and managed by crossplane. 
+
+1) I want new bucket to be created if it does not exists.
+2) I want the bucket to be enabled with server side encryption
+3) I want the bucket to be protected from public
+4) I want the bucket name to be written inside a kubernetes configmap
+
+
+
+#### Create the XRD and composition
+
+The project is located in the folder "crossplane-springpeople/composite/s3" 
+
+"composition" folder has both XRD and composition definitions. Apply them with kubectl
+
+```
+git clone https://github.com/basil1987/crossplane-springpeople.git
+cd crossplane-springpeople/composite/s3/composition
+kubectl apply -f definition.yaml
+kubectl apply -f composition.yaml
+```
+
+"Claim" folder has s3.yaml, apply with kubectl 
+
+```
+cd
+cd crossplane-springpeople/composite/s3/claim
+kubectl apply -f s3.yaml
+```
+
