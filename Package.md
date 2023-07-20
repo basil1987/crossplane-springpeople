@@ -148,3 +148,172 @@ You will see an S3 Bucket as well as a Dynamo table. Both resources must have RE
 
 If READY=False, run the kubectl describe command against each managed resource which false status. 
 
+
+
+## SOMETHING WENT WRONG 
+
+For some reason, the table was created but bucket was NOT. While executing describe comamnd againts the XR, I noticed that there is a warning that talks about including sme field spec.atProvider.region into the composite resource. 
+
+I also recently got few requests that some Dynamo tables should have accidental protection enabled. 
+
+So I am going to create a new package that will have following bug fixed.
+
+1) Bucket Issues
+
+And Following feature enhancement. 
+
+1) Ability for the developers to protect their tables from accidental protetion. Its purely an optional choice.
+
+
+#### Implementing above changes, 
+
+I need to modify both xrd (defenition.yaml) and composition (composition.yaml) to fix this.
+
+1) (definition.yaml). 
+
+```
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: databases.custom-api.example.org
+spec:
+  group: custom-api.example.org
+  names:
+    kind: database
+    plural: databases
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              region:
+                type: string
+                oneOf:
+                  - pattern: '^EU$'
+                  - pattern: '^US$'
+                  - pattern: '^AP$'
+              enableAccidentalTermination:     ### added  enableAccidentalTermination to the schema
+                type: boolean                  ###
+            required:
+              - region
+  claimNames:
+    kind: custom-database
+    plural: custom-databases
+```
+
+2) (composition.yaml)
+
+```
+    - name: dynamoDB
+      base:
+        apiVersion: dynamodb.aws.upbound.io/v1beta1
+        kind: Table
+        metadata:
+          name: crossplane-quickstart-database
+        spec:
+          forProvider:
+            deletionProtectionEnabled: False                                   ## This becomes true if the developer set enableAccidentalTermination
+            writeCapacity: 1
+            readCapacity: 1
+            attribute:
+              - name: S3ID
+                type: S
+            hashKey: S3ID
+      patches:
+        - fromFieldPath: "spec.enableAccidentalTermination"                     ## Patch the deletionProtectionEnabled with developer provded value
+          toFieldPath: "spec.forProvider.deletionProtectionEnabled"             ## 
+```
+
+
+
+#### Packaging and Pushing the changes.
+
+
+Repeat the same instructions we used earlier to create the package. You have to go to the folder "packages/my-dynamo-bucket" and run below command
+
+
+```
+cd packages/my-dynamo-bucket
+rm *.xpkg  ## to delete old files
+kubectl crossplane build configuration ## To build new package
+kubectl crossplane push configuration basilvarghese/my-dynamo-bucket:1.0.1
+```
+
+
+#### Installing the new package in Crossplane 
+
+When you install a new version of the configuration package, the crossplane will not delete the old version. It created new revision and makes the latest revision "Active". The old one become "InActive" . This behaviour can be modified by setting "revisionActivationPolicy" field. 
+
+To install the package 1.0.1, use below YAML file and apply it with kubectl apply .
+
+
+```
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: basilvarghese-my-dynamo-bucket
+spec:
+  package: basilvarghese/my-dynamo-bucket:1.0.1
+  packagePullPolicy: IfNotPresent
+  revisionActivationPolicy: Automatic
+  revisionHistoryLimit: 1
+```
+
+Replace the package basilvarghese/my-dynamo-bucket:1.0.1 with your own package. 
+
+
+
+#### Verify the new installation 
+
+Run the command below to verify that READY=true 
+
+```
+kubectl get configurations
+```
+
+Now, check which one is the Active revision. The new one should be active by default.
+
+```
+kubectl get configurationrevisions
+```
+
+When the new new revision become active, the current XRs will start using the new revision. Which also means, the error should be gone, and bucket should be created. 
+
+Verify that your XR is showing READY=true
+
+```
+kubectl get composite
+```
+
+TADA!! Bucket is now created. 
+
+
+Also, my developer now will have the ability to protect their tables. To verify, modify your claim which look like below.
+
+
+```
+apiVersion: custom-api.example.org/v1alpha1
+kind: custom-database
+metadata:
+  name: claimed-eu-database-basil
+  namespace: dev
+spec:
+  region: "AP"
+  enableAccidentalTermination: True     ## This field enable protection for the developer table
+```
+
+Save above file and run kubectl apply to make the changes. 
+
+After a couple of seconds, check the managed resource curresponding to the bucket. Look for the field status.atProvider.deletionProtectionEnabled. It should be True. 
+
+```
+kubectl get tables.dynamodb.aws.upbound.io
+kubectl describe <YOUR_TABLE_PREVIOUS_COMMAND>
+```
+
