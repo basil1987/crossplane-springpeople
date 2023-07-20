@@ -297,3 +297,23 @@ TADA!! Bucket is now created.
 Also, my developer now will have the ability to protect their tables. To verify, modify your claim which look like below.
 
 
+```
+apiVersion: custom-api.example.org/v1alpha1
+kind: custom-database
+metadata:
+  name: claimed-eu-database-basil
+  namespace: dev
+spec:
+  region: "AP"
+  enableAccidentalTermination: True     ## This field enable protection for the developer table
+```
+
+Save above file and run kubectl apply to make the changes. 
+
+After a couple of seconds, check the managed resource curresponding to the bucket. Look for the field status.atProvider.deletionProtectionEnabled. It should be True. 
+
+```
+kubectl get tables.dynamodb.aws.upbound.io
+kubectl describe <YOUR_TABLE_PREVIOUS_COMMAND>
+```
+
