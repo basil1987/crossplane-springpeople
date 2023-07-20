@@ -21,6 +21,9 @@ The user will have the ability to chose
 4) Kind of Disk the need can be selected from 3 options - slow, moderate, high.
 
 
+
+### Work to do:
+
 1) Create XRD. XRD defines possible fields my developers can choose.
 
 2) Create a composition, which will have a VPC, 3 private Subnets, 1 public subject (where application runs), a subnetgroup, db security group with permission given to the public IP.
