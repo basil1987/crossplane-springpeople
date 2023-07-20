@@ -24,6 +24,8 @@ spec:
                   - pattern: '^EU$'
                   - pattern: '^US$'
                   - pattern: '^AP$'
+              enableAccidentalTermination: 
+                type: boolean
             required:
               - region
   claimNames:
