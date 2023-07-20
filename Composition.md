@@ -168,18 +168,24 @@ kubectl apply -f s3.yaml
 
 1) Make sure that your XR is retuning the status READY=true 
 
+```
 kubectl get composite
+```
 
 2) The Bucket was created in the right region mentioned in the claim. For that, you can check the MR
 
+```
 kubectl describe buckets.s3.aws.upbound.io 
+```
 
 You can look into the status field which contains region information, ARN, ID
 
 3) Your XR copied the status updates such as ARN and ID.
 
+```
 kubectl get composite
-kubectl describe COMPOSITE_NAME_FROM_PREVIOUS_COMMAND
+kubectl describe composite COMPOSITE_NAME_FROM_PREVIOUS_COMMAND
+```
 
 You will see ARN and BucketName updated in the status field. 
 
